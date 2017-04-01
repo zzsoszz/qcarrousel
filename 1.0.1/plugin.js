@@ -71,11 +71,11 @@
 		    return result;
 		}
 
-/*
- *1.定时执行动画
- *2.鼠标移动到dot上，清除定时器
- *3.移动开添加定时器
- */
+		 /*
+		 *1.定时执行动画
+		 *2.鼠标移动到dot上，清除定时器
+		 *3.移动开添加定时器
+		  */
 
 		  function PluginObject(target) {
 		  	var self=this;
@@ -144,7 +144,7 @@
 		      	  }
 		      });
 		      
-		      //self.showIndex(0);
+		      
 		      if(options.autoRun){
 				  target.on('touchstart', function (ev) {
 					    startX = ev.originalEvent.touches[0].pageX;
