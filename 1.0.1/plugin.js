@@ -125,6 +125,9 @@
 			{
 				return self.currentPage==self.totalPage;
 			};
+			self.getCurrentPage=function(){
+				return self.currentPage;
+			};
 			self.getCurrentPageData=function()
 			{
 				return self.pageData[self.currentPage-1]||[];
@@ -168,117 +171,96 @@
 		    self.items = [];
 		    self.dots =[];
 		    self.timeline;
-		    self.speed=1;
-		    var iterval;
-		    self.showIndex=function(index)
-		    {
-		      var oldele=$(self.items.get(self.preindex)); 
-			  var olddotele=$(self.dots.get(self.preindex));
-			  olddotele.removeClass("active");
-			  oldele.stop().animate({"opacity":"0"},500,function f()
-			  {
-			  		$(self.dots.get(index)).addClass("active");
-		  	  		self.preindex=index;
-			  });
-			  $(self.items.get(index)).show().stop().animate({"opacity":"1"},500,function f2(){
-			  		//setTimeout(self.start, 5000);
-		  	  });
-		    };
+		    self.speed=0.5;
+		    self.iterval;
 		    self.turnPage=function(pageIndex)
 		    {
-			   if(!self.timeline.isActive()){
-				 	self.timeline.clear();
+		    	if(!self.timeline.isActive()){
+					self.timeline.kill().clear();
 					var  curPageData=self.pager.getCurrentPageData();
+					var  prevPageIndex=self.pager.getCurrentPage();
 				    var  nextPageData=self.pager.go(pageIndex).getCurrentPageData();
-				    for(var i=0;i<curPageData.length;i++){
-				    	self.timeline.add(TweenLite.to(curPageData[i],self.speed, {
-					            opacity: 0,
-					            zIndex:0
-					    }), "0");
-				    };
-				    
-				    for(var i=0;i<nextPageData.length;i++){
-				    	self.timeline.add(TweenLite.to(nextPageData[i],self.speed, {
-					            opacity: 1,
-					            zIndex:1
-					    }), "0");
-				    };
-				    self.dots.removeClass("active");
-				    $(self.dots.get(pageIndex-1)).addClass("active");
-				    self.timeline.play();
+				    var  nextPageIndex=self.pager.getCurrentPage();
+				     console.log(prevPageIndex,nextPageIndex);
+			    // if(prevPageIndex!=nextPageIndex)
+			    // {
+			    	 self.transition(curPageData,nextPageData,prevPageIndex,nextPageIndex);
+			    //}
 			   }
 		    };
 		    self.turnNext=function(){
-				if(!self.timeline.isActive()){
-					self.timeline.clear();
+		    	if(!self.timeline.isActive()){
+					self.timeline.kill().clear();
 					var  curPageData=self.pager.getCurrentPageData();
-				    var  nextPageData=self.pager.next().getCurrentPageData();
-
-				    for(var i=0;i<curPageData.length;i++){
-				    	self.timeline.add(TweenLite.to(curPageData[i],self.speed, {
-					            opacity: 0,
-					            zIndex:0
-					    }), "0");
-				    };
-				    for(var i=0;i<nextPageData.length;i++){
-				    	self.timeline.add(TweenLite.to(nextPageData[i],self.speed, {
-					            opacity: 1,
-					            zIndex:1
-					    }), "0");
-				    };
-				    self.timeline.play();
-			    }
+					var  prevPageIndex=self.pager.getCurrentPage();
+					var  nextPageData=self.pager.next().getCurrentPageData();
+				    var  nextPageIndex=self.pager.getCurrentPage();
+				    console.log(prevPageIndex,nextPageIndex);
+				    self.transition(curPageData,nextPageData,prevPageIndex,nextPageIndex);
+				}
 		    };
 		    self.turnPrev=function(){
-				if(!self.timeline.isActive()){
-					self.timeline.clear();
-
-					//当前页面的往右移动
+		    	if(!self.timeline.isActive()){
+					self.timeline.kill().clear();
 				    var  curPageData=self.pager.getCurrentPageData();
-
-				    var  prevPageData=self.pager.prev().getCurrentPageData();
-				    
-				    for(var i=0;i<curPageData.length;i++){
-				    	self.timeline.add(TweenLite.to(curPageData[i],self.speed, {
-					           opacity: 0
-					    }), "0");
-				    };
-				    //前一页的移动到可视区域
-				    for(var i=0;i<prevPageData.length;i++){
-				    	self.timeline.add(TweenLite.to(prevPageData[i],self.speed, {
-					            x:1
-					    }), "0");
-				    };
-				    self.timeline.play();
-				    
-			    }
+					var  prevPageIndex=self.pager.getCurrentPage();
+					var  nextPageData=self.pager.prev().getCurrentPageData();
+				    var  nextPageIndex=self.pager.getCurrentPage();
+				    console.log(prevPageIndex,nextPageIndex);
+				    self.transition(curPageData,nextPageData,prevPageIndex,nextPageIndex);
+				}
+		    };
+		    self.transition=function(curPageData,nextPageData,prevPageIndex,nextPageIndex){
+			    for(var i=0;i<curPageData.length;i++){
+			    	self.timeline.add(TweenLite.to(curPageData[i],self.speed, {
+				            opacity: 0,
+				            zIndex:0
+				    }), "0");
+			    };
+			    for(var i=0;i<nextPageData.length;i++){
+			    	self.timeline.add(TweenLite.to(nextPageData[i],self.speed, {
+				            opacity: 1,
+				            zIndex:1
+				    }), "0");
+			    };
+			    self.timeline.add(TweenLite.set(self.dots.get(prevPageIndex-1), {
+				            className:"-=active"
+				}), "0");
+			    self.timeline.add(TweenLite.set(self.dots.get(nextPageIndex-1), {
+				            className:"+=active"
+				}), "0");
+			    self.timeline.play();
 		    };
 		    self.startAutoRun=function()
 		    {
-		    	iterval=setInterval(self.next,2000);	
+		    	self.iterval=setInterval(self.turnNext,2000);	
 		    };
  			self.stopAutoRun=function()
 		    {
-		    	clearInterval(iterval);
+		    	clearInterval(self.iterval);
 		    };
 		    self.init = function(options) {
-		      
 		      self.timeline = new TimelineMax({paused:true});
 		      self.items = target.find(".item");
 		      self.dots = target.find(".dot");
+
 		      var pager=new Pager(self.items.toArray(),1,true);
 		      self.pager=pager;
-		      self.dots.on("click",function(event)
-			      {
+		      self.dots.on("click",function(event){
 			      	 self.turnPage(self.dots.get().indexOf(event.target)+1);
-			      }
-		      );
-		      // target.on("mouseenter",function(event)
-		      // {
-		      	 
-		      // }).on("mouseleave",function(){
-		      	 
-		      // });
+			   });
+		      self.turnPage(1);
+
+		      
+		      if(options.autoRun){
+	 			  target.on("mouseenter",function(event)
+			      {
+			      	 self.stopAutoRun();
+			      }).on("mouseleave",function(){
+			      	 self.startAutoRun();
+			      });
+			      self.startAutoRun()
+		      };
 		    //   if(options.autoRun){
 				  // target.on('touchstart', function (ev) {
 					 //    startX = ev.originalEvent.touches[0].pageX;
