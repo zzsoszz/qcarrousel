@@ -250,8 +250,7 @@
 			      	 self.turnPage(self.dots.get().indexOf(event.target)+1);
 			   });
 		      self.turnPage(1);
-
-		      
+		      target.height(self.items.eq(0).height()+"px");
 		      if(options.autoRun){
 	 			  target.on("mouseenter",function(event)
 			      {
